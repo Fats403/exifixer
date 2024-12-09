@@ -15,6 +15,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import JSZip from "jszip";
 import EXIF from "exif-js";
+import Image from "next/image";
 
 interface ImageData {
   filename: string;
@@ -74,7 +75,7 @@ const ExifEditor: React.FC = () => {
     degrees: number
   ): Promise<Blob> => {
     return new Promise((resolve) => {
-      const img = new Image();
+      const img = document.createElement("img");
       img.onload = () => {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d")!;
@@ -135,6 +136,7 @@ const ExifEditor: React.FC = () => {
           const imageUrl = URL.createObjectURL(blob);
 
           const exifData = await new Promise<ImageData>((resolve) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             EXIF.getData(blob as any, function (this: any) {
               const orientation = EXIF.getTag(this, "Orientation") || 1;
               resolve({
@@ -164,11 +166,11 @@ const ExifEditor: React.FC = () => {
         description: `Loaded ${imageFiles.length} images from ZIP file.`,
       });
     } catch (error) {
+      console.error("Failed to process file:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description:
-          error instanceof Error ? error.message : "An unknown error occurred.",
+        description: "An unknown error occurred",
       });
     } finally {
       setIsProcessing(false);
@@ -226,6 +228,7 @@ const ExifEditor: React.FC = () => {
         description: "All image orientations have been fixed!",
       });
     } catch (error) {
+      console.error("Failed to fix orientations:", error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -241,7 +244,7 @@ const ExifEditor: React.FC = () => {
       setIsProcessing(true);
       const zip = new JSZip();
 
-      images.forEach((img, index) => {
+      images.forEach((img) => {
         zip.file(img.filename, img.blob);
       });
 
@@ -262,6 +265,7 @@ const ExifEditor: React.FC = () => {
         description: "Images downloaded successfully!",
       });
     } catch (error) {
+      console.error("Failed to download images:", error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -340,11 +344,13 @@ const ExifEditor: React.FC = () => {
             <div className="space-y-4">
               <div className="relative w-full aspect-video bg-muted rounded-lg overflow-hidden">
                 <div className="w-full h-full flex items-center justify-center">
-                  <img
+                  <Image
                     key={images[currentImageIndex].url}
                     src={images[currentImageIndex].url}
                     alt={`Image ${currentImageIndex + 1}`}
-                    className="max-w-full max-h-full object-contain"
+                    fill
+                    className="object-contain"
+                    priority
                   />
                 </div>
 
