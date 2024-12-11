@@ -17,6 +17,12 @@ import { useToast } from "@/hooks/use-toast";
 import JSZip from "jszip";
 import EXIF from "exif-js";
 import Image from "next/image";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ImageData {
   filename: string;
@@ -25,6 +31,21 @@ interface ImageData {
   orientation: number;
   originalBlob: Blob;
 }
+
+const getOrientationDegrees = (orientation: number): string => {
+  switch (orientation) {
+    case 1:
+      return "0°";
+    case 3:
+      return "180°";
+    case 6:
+      return "90° CW";
+    case 8:
+      return "270° CW";
+    default:
+      return "Unknown";
+  }
+};
 
 const ExifEditor: React.FC = () => {
   const [images, setImages] = useState<ImageData[]>([]);
@@ -275,22 +296,23 @@ const ExifEditor: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen w-full bg-slate-50 p-6">
+    <div className="flex flex-col items-center justify-center min-h-screen w-full bg-blue-100 p-6">
       <div
         className="flex absolute inset-0 z-0"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.08'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
         }}
       ></div>
-      <div className="z-10 max-w-2xl space-y-6">
+      <div className="z-10 space-y-6 max-w-2xl">
         {/* Title and Explanation Section */}
-        <div className="text-center space-y-3 mb-6">
+        <div className="text-center mx-auto max-w-xl space-y-3 mb-6">
           <h1 className="text-3xl font-bold tracking-tight">
-            EXIF Orientation Fixer
+            Photo Rotation Fixer
           </h1>
-          <p className="text-muted-foreground max-w-xl px-2">
-            Fix incorrectly rotated photos from your smartphone. This tool
-            automatically detects and corrects EXIF orientation issues.
+          <p className="text-muted-foreground">
+            Fix photos that appear sideways or upside down after being taken on
+            your smartphone. This tool automatically detects and corrects
+            rotation issues.
           </p>
         </div>
 
@@ -366,12 +388,38 @@ const ExifEditor: React.FC = () => {
                   {/* Image Controls Overlay */}
                   <div className="absolute inset-0 flex flex-col justify-between p-4">
                     <div className="self-end">
-                      <div className="bg-background/95 backdrop-blur-sm px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-sm">
-                        <Info className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">
-                          EXIF Orientation:{" "}
-                          {images[currentImageIndex].orientation}
-                        </span>
+                      <div className="group relative">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <div className="border-solid border-black border bg-background/70 backdrop-blur-sm px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-sm">
+                                <Info className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm font-medium">
+                                  Current Rotation:{" "}
+                                  {images[currentImageIndex].orientation} (
+                                  {getOrientationDegrees(
+                                    images[currentImageIndex].orientation
+                                  )}
+                                  )
+                                </span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent className="w-64">
+                              <p className="mb-2">EXIF orientation values:</p>
+                              <ul className="space-y-1">
+                                <li>1 = Normal (0°)</li>
+                                <li>3 = Upside down (180°)</li>
+                                <li>6 = Rotated right (90° CW)</li>
+                                <li>8 = Rotated left (270° CW)</li>
+                              </ul>
+                              <p className="mt-2 text-xs text-gray-300">
+                                EXIF data is metadata stored in image files that
+                                includes information about the image&apos;s
+                                orientation.
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
                     </div>
 
@@ -381,11 +429,11 @@ const ExifEditor: React.FC = () => {
                         size="icon"
                         onClick={previousImage}
                         disabled={isProcessing}
-                        className="shadow-sm"
+                        className="border-solid border-black border shadow-sm bg-background/70 backdrop-blur-sm"
                       >
                         <ArrowLeft className="h-4 w-4" />
                       </Button>
-                      <div className="bg-background/95 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-sm">
+                      <div className="border-solid border-black border bg-background/70 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-sm">
                         <span className="text-sm font-medium">
                           {currentImageIndex + 1} / {images.length}
                         </span>
@@ -395,7 +443,7 @@ const ExifEditor: React.FC = () => {
                         size="icon"
                         onClick={nextImage}
                         disabled={isProcessing}
-                        className="shadow-sm"
+                        className=" border-solid border-black border shadow-sm bg-background/70 backdrop-blur-sm"
                       >
                         <ArrowRight className="h-4 w-4" />
                       </Button>
@@ -438,12 +486,12 @@ const ExifEditor: React.FC = () => {
         </Card>
 
         {/* Additional Info */}
-        <div className="text-center text-sm text-muted-foreground space-y-2">
+        <div className="text-center text-sm text-muted-foreground space-y-2 mx-12">
           <p>
-            All processing is done locally in your browser. Your images are
-            never uploaded to any server.
+            Your privacy is protected - all photo processing happens directly in
+            your browser.
           </p>
-          <p>Made with ❤️ by Brayden.</p>
+          <p>Photos are never uploaded to any server.</p>
         </div>
       </div>
     </div>
